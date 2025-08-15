@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Entry Pass Tickets 001–950</title>
+<style>
+  :root {
+    --ticket-w: 58mm;   /* ticket width for print */
+    --ticket-h: 35mm;   /* ticket height for print */
+    --gap: 6mm;
+    --radius: 10px;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    margin: 0;
+    padding: 16px;
+    background: #f6f7f9;
+  }
+
+  header {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  h1 {
+    font-size: 18px;
+    margin: 0;
+  }
+
+  .controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  button, input {
+    font: inherit;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #d0d5dd;
+    background: white;
+  }
+  button {
+    cursor: pointer;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .ticket {
+    background: white;
+    border: 2px dashed #a3aed0;
+    border-radius: var(--radius);
+    padding: 12px;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 58 / 35; /* visually match print size */
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  }
+
+  .ticket .label {
+    font-size: 11px;
+    letter-spacing: .06em;
+    color: #667085;
+    text-transform: uppercase;
+  }
+
+  .ticket .serial {
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    font-size: 28px;
+    letter-spacing: 0.06em;
+    color: #1f2937;
+  }
+
+  /* Print layout: fixed-size tickets in rows, nice margins */
+  @media print {
+    body { background: white; padding: 0; }
+    header { display: none; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(var(--ticket-w), 1fr));
+      gap: var(--gap);
+      padding: var(--gap);
+    }
+    .ticket {
+      width: var(--ticket-w);
+      height: var(--ticket-h);
+      aspect-ratio: auto;
+      box-shadow: none;
+    }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Entry Pass Tickets (001–950)</h1>
+    <div class="controls">
+      <label>Prefix:
+        <input id="prefix" type="text" placeholder="(optional)" />
+      </label>
+      <label>Start:
+        <input id="start" type="number" value="1" min="1" />
+      </label>
+      <label>End:
+        <input id="end" type="number" value="950" min="1" />
+      </label>
+      <label>Pad to digits:
+        <input id="pad" type="number" value="3" min="1" />
+      </label>
+      <button id="regen">Generate</button>
+      <button onclick="window.print()">Print / Save PDF</button>
+    </div>
+  </header>
+
+  <main class="grid" id="grid" aria-live="polite"></main>
+
+<script>
+  function makeTickets({ start=1, end=950, pad=3, prefix='' } = {}) {
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+    const frag = document.createDocumentFragment();
+
+    for (let n = start; n <= end; n++) {
+      const serial = String(n).padStart(pad, '0');
+      const card = document.createElement('div');
+      card.className = 'ticket';
+      card.setAttribute('data-serial', serial);
+
+      card.innerHTML = `
+        <div class="label">Entry Pass</div>
+        <div class="serial">${prefix ? prefix + '-' : ''}${serial}</div>
+      `;
+      frag.appendChild(card);
+    }
+    grid.appendChild(frag);
+  }
+
+  // Initial render 001–950
+  makeTickets();
+
+  // Controls
+  document.getElementById('regen').addEventListener('click', () => {
+    const start = parseInt(document.getElementById('start').value || '1', 10);
+    const end   = parseInt(document.getElementById('end').value || '950', 10);
+    const pad   = parseInt(document.getElementById('pad').value || '3', 10);
+    const prefix = document.getElementById('prefix').value.trim();
+    makeTickets({ start, end, pad, prefix });
+  });
+</script>
+</body>
+</html>
